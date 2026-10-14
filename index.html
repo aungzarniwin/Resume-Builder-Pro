@@ -1,0 +1,299 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resume Builder Pro</title>
+<meta name="description" content="Professional AI Resume Builder with ATS optimization, resume upload and PDF export.">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
+<style>
+:root{--bg:#f3f5f9;--panel:#fff;--ink:#172033;--muted:#68748a;--line:#e0e5ed;--accent:#635bff;--soft:#eeedff;--green:#137b58}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 Inter,Arial,sans-serif}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+header{background:#111827;color:#fff;padding:19px 24px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{font-size:21px;font-weight:800;letter-spacing:-.6px}
+.brand span{color:#a9a3ff}
+header small{color:#c5cada}
+.layout{max-width:1500px;margin:auto;padding:22px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:21px;min-width:0;box-shadow:0 5px 20px #17203306}
+h2{font-size:19px;margin:0 0 6px;letter-spacing:-.4px}
+h3{font-size:14px;margin:22px 0 10px}
+.muted{color:var(--muted);font-size:13px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+.btn{border:1px solid var(--line);background:white;color:var(--ink);border-radius:9px;padding:10px 13px;font-weight:650}
+.btn.primary{background:var(--accent);color:white;border-color:var(--accent)}
+.btn.dark{background:#172033;color:white}
+.btn:disabled{opacity:.55;cursor:wait}
+label{display:block;font-size:12px;font-weight:750;color:#495469;margin-bottom:5px}
+input,textarea,select{width:100%;border:1px solid #dce1eb;border-radius:8px;padding:10px 11px;background:#fff;color:var(--ink);outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px #635bff17}
+textarea{min-height:95px;resize:vertical}
+.field{margin:10px 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.drop{display:block;border:1px dashed #aaa5f7;background:#f8f7ff;padding:20px;border-radius:12px;text-align:center;margin:16px 0;cursor:pointer}
+.drop input{display:none}
+.status{padding:10px 12px;background:#f4f5f8;border-radius:8px;font-size:13px;margin:12px 0;white-space:pre-wrap}
+.status.error{background:#fff0f0;color:#a32121}
+.status.ok{background:#eaf8f1;color:#176747}
+.tabs{display:flex;gap:7px;flex-wrap:wrap;margin:17px 0}
+.tab{border:1px solid var(--line);background:#fff;padding:8px 12px;border-radius:8px}
+.tab.active{background:var(--soft);border-color:#b8b1ff;color:#453bdb}
+.section-card{border-top:1px solid var(--line);padding-top:5px;margin-top:18px}
+.preview-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.preview-wrap{background:#e8ebf1;padding:14px;border-radius:10px;overflow:auto}
+.resume{background:#fff;width:100%;max-width:800px;min-height:900px;margin:auto;padding:45px 48px;box-shadow:0 4px 18px #0000000b;color:#222;font:10.5pt/1.5 Arial,sans-serif;overflow-wrap:anywhere}
+.resume h1{font-size:27pt;line-height:1.15;margin:0 0 5px;letter-spacing:-.5px}
+.resume .role{font-size:12pt;font-weight:600;color:#555;margin-bottom:9px}
+.resume .contact{font-size:9pt;color:#555;margin-bottom:22px}
+.resume h2{font-size:11pt;text-transform:uppercase;letter-spacing:1px;border-bottom:1.5px solid #333;padding-bottom:4px;margin:18px 0 8px}
+.resume p{margin:4px 0}
+.resume .job{margin:0 0 12px}
+.resume .job-title{font-weight:bold}
+.resume .job-meta{color:#555;font-size:9pt}
+.resume ul{padding-left:19px;margin:5px 0}
+.resume li{margin:3px 0}
+.resume.modern{border-top:9px solid #635bff}
+.resume.executive h1{font-family:Georgia,serif}
+.resume.minimal h1{font-size:24pt;letter-spacing:0}
+.resume.minimal h2{border-bottom:1px solid #aaa;letter-spacing:.5px}
+footer{text-align:center;color:var(--muted);padding:10px 20px 30px;font-size:12px}
+@media(max-width:900px){.layout{grid-template-columns:1fr;padding:12px}.panel{padding:15px}.resume{padding:28px 24px;min-height:700px}}
+@media(max-width:480px){header{padding:15px}.grid2{grid-template-columns:1fr}.resume h1{font-size:22pt}.preview-wrap{padding:5px}.actions .btn{flex:1}}
+@media print{
+ @page{size:A4;margin:0}
+ body{background:white}
+ header,.editor-panel,.preview-head,footer,.no-print{display:none!important}
+ .layout{display:block;padding:0;margin:0;max-width:none}
+ .preview-panel{border:0;padding:0;box-shadow:none}
+ .preview-wrap{padding:0;background:white;overflow:visible}
+ .resume{box-shadow:none;margin:0;width:210mm;max-width:none;min-height:297mm;padding:17mm 18mm;font-size:10pt}
+ .resume h1{font-size:25pt}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">Resume<span>Builder</span> Pro</div>
+  <small>AI-powered career toolkit · English edition</small>
+</header>
+
+<main class="layout">
+<section class="panel editor-panel">
+<h2>Build your professional resume</h2>
+<div class="muted">Upload an existing resume or create one from scratch. Review all AI-generated content before applying.</div>
+
+<label class="drop">
+  <strong>↑ Upload resume</strong><br>
+  <span class="muted">PDF, DOCX, or TXT · up to 5 MB</span>
+  <input id="fileInput" type="file" accept=".pdf,.docx,.txt,application/pdf">
+</label>
+<div class="actions">
+  <button class="btn" id="newBtn">＋ New resume</button>
+  <button class="btn" id="saveBtn">Save draft</button>
+  <button class="btn" id="loadBtn">Load draft</button>
+</div>
+
+<div class="field">
+<label for="apiUrl">Secure AI Worker URL</label>
+<input id="apiUrl" type="url" placeholder="https://your-worker.your-subdomain.workers.dev">
+<div class="muted">Enter your deployed Cloudflare Worker URL. Never enter your Gemini API key here.</div>
+</div>
+
+<div class="tabs">
+<button class="tab active" data-tab="profile">Profile</button>
+<button class="tab" data-tab="experience">Experience</button>
+<button class="tab" data-tab="skills">Skills & Education</button>
+<button class="tab" data-tab="job">Target job & ATS</button>
+</div>
+
+<div id="tab-profile">
+<div class="grid2">
+<div class="field"><label>Full name</label><input id="name" placeholder="Your full name"></div>
+<div class="field"><label>Professional title</label><input id="title" placeholder="e.g. Sales Manager"></div>
+</div>
+<div class="grid2">
+<div class="field"><label>Email</label><input id="email" type="email" placeholder="you@example.com"></div>
+<div class="field"><label>Phone</label><input id="phone" placeholder="+95 ..."></div>
+</div>
+<div class="grid2">
+<div class="field"><label>Location</label><input id="location" placeholder="City, Country"></div>
+<div class="field"><label>LinkedIn / Portfolio</label><input id="linkedin" placeholder="https://..."></div>
+</div>
+<div class="field"><label>Professional summary</label><textarea id="summary" placeholder="Your experience, strengths and professional value"></textarea></div>
+</div>
+
+<div id="tab-experience" hidden>
+<div class="field"><label>Work experience</label>
+<div class="muted">One job per block. Include job title, company, dates and achievement-focused bullet points.</div>
+<textarea id="experience" rows="13" placeholder="Sales Manager | ABC Company | 2022–Present&#10;• Led a team of 15 sales representatives&#10;• Improved revenue by 18%&#10;&#10;Area Sales Manager | XYZ Ltd | 2018–2022&#10;• Expanded distribution across 3 regions"></textarea>
+</div>
+<div class="field"><label>Key achievements and metrics</label><textarea id="achievements" placeholder="Revenue growth, target achievement, cost savings, team size, distribution growth..."></textarea></div>
+</div>
+
+<div id="tab-skills" hidden>
+<div class="field"><label>Skills</label><textarea id="skills" placeholder="Sales strategy, leadership, forecasting, Excel, negotiation..."></textarea></div>
+<div class="field"><label>Education</label><textarea id="education" placeholder="Degree or qualification | Institution | Year"></textarea></div>
+<div class="field"><label>Certifications and training</label><textarea id="certifications" placeholder="Professional courses, certifications, training"></textarea></div>
+<div class="field"><label>Languages</label><input id="languages" placeholder="English, Burmese..."></div>
+</div>
+
+<div id="tab-job" hidden>
+<div class="field"><label>Target job title</label><input id="targetTitle" placeholder="e.g. Regional Sales Manager"></div>
+<div class="field"><label>Job description (optional)</label><textarea id="jobDescription" rows="8" placeholder="Paste the job advertisement here to tailor your resume and check relevant ATS keywords"></textarea></div>
+<div class="actions">
+<button class="btn primary" id="rewriteBtn">✦ Rewrite with AI</button>
+<button class="btn" id="atsBtn">Check ATS fit</button>
+</div>
+<div id="aiStatus" class="status" role="status">AI is ready once your Worker URL is configured.</div>
+<div id="atsResult"></div>
+</div>
+
+<div class="field section-card">
+<label for="template">Resume template</label>
+<select id="template">
+<option value="classic">Classic professional</option>
+<option value="modern">Modern accent</option>
+<option value="executive">Executive</option>
+<option value="minimal">Minimal ATS-friendly</option>
+</select>
+</div>
+<div class="actions">
+<button class="btn primary" id="previewBtn">Update preview</button>
+<button class="btn dark" id="pdfBtn">Print / Save PDF</button>
+</div>
+<div class="muted">Privacy: drafts are stored in this browser only. Uploaded file text is sent to your AI Worker only when you request an AI action.</div>
+</section>
+
+<section class="panel preview-panel">
+<div class="preview-head">
+<div><h2>Live resume preview</h2><div class="muted">Review details and dates before exporting.</div></div>
+<button class="btn" id="copyBtn">Copy resume text</button>
+</div>
+<div class="preview-wrap"><article id="resume" class="resume">
+<h1>Your Name</h1><div class="role">Professional Title</div><div class="contact">Email · Phone · Location</div>
+<h2>Professional Summary</h2><p>Your professional summary will appear here.</p>
+<h2>Experience</h2><p>Add your work experience in the editor.</p>
+<h2>Skills</h2><p>Add your key skills.</p>
+</article></div>
+</section>
+</main>
+<footer>Resume Builder Pro · Keep your career story accurate, clear and measurable.</footer>
+
+<script>
+"use strict";
+if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc=
+ "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+const $=id=>document.getElementById(id);
+const fields=["name","title","email","phone","location","linkedin","summary","experience","achievements","skills","education","certifications","languages","targetTitle","jobDescription"];
+let extractedText="";
+const escapeHTML=s=>String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const val=id=>$(id).value.trim();
+function getData(){let d={};fields.forEach(k=>d[k]=val(k));return d}
+function setData(d){fields.forEach(k=>$(k).value=d[k]||"");render()}
+function setStatus(s,type=""){const e=$("aiStatus");e.textContent=s;e.className="status "+type}
+function lines(s){return String(s||"").split(/\n+/).map(x=>x.trim()).filter(Boolean)}
+function bullets(s){return lines(s).map(x=>x.replace(/^[-•*]\s*/,"")).filter(Boolean)}
+function section(title,html){return html?`<h2>${title}</h2>${html}`:""}
+function render(){
+ const d=getData(),cls=$("template").value;
+ const contact=[d.email,d.phone,d.location,d.linkedin].filter(Boolean).map(escapeHTML).join(" · ");
+ const exp=lines(d.experience).map(line=>{
+   const m=line.match(/^(.+?)\s*\|\s*(.+?)\s*\|\s*(.+)$/);
+   if(m)return `<div class="job"><div class="job-title">${escapeHTML(m[1])} · ${escapeHTML(m[2])}</div><div class="job-meta">${escapeHTML(m[3])}</div></div>`;
+   if(/^[-•*]\s/.test(line))return `<p>• ${escapeHTML(line.replace(/^[-•*]\s*/,""))}</p>`;
+   return `<p>${escapeHTML(line)}</p>`;
+ }).join("");
+ const achievements=bullets(d.achievements);
+ const achievementHTML=achievements.length?`<ul>${achievements.map(x=>`<li>${escapeHTML(x)}</li>`).join("")}</ul>`:"";
+ const skillItems=bullets(d.skills.replace(/,/g,"\n"));
+ const skillHTML=skillItems.length?`<p>${skillItems.map(escapeHTML).join(" · ")}</p>`:"";
+ const educationHTML=lines(d.education).map(x=>`<p>${escapeHTML(x)}</p>`).join("");
+ const certHTML=lines(d.certifications).map(x=>`<p>${escapeHTML(x)}</p>`).join("");
+ const langHTML=d.languages?`<p>${escapeHTML(d.languages)}</p>`:"";
+ $("resume").className="resume "+cls;
+ $("resume").innerHTML=`<h1>${escapeHTML(d.name||"Your Name")}</h1>
+ <div class="role">${escapeHTML(d.title||"Professional Title")}</div>
+ <div class="contact">${contact||"Email · Phone · Location"}</div>
+ ${section("Professional Summary",d.summary?`<p>${escapeHTML(d.summary).replace(/\n/g,"<br>")}</p>`:"")}
+ ${section("Professional Experience",exp)}
+ ${section("Key Achievements",achievementHTML)}
+ ${section("Skills",skillHTML)}
+ ${section("Education",educationHTML)}
+ ${section("Certifications",certHTML)}
+ ${section("Languages",langHTML)}`;
+}
+fields.forEach(id=>$(id).addEventListener("input",render));
+$("template").addEventListener("change",render);
+document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{
+ document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===b));
+ ["profile","experience","skills","job"].forEach(t=>$("tab-"+t).hidden=t!==b.dataset.tab);
+}));
+$("previewBtn").onclick=render;
+$("newBtn").onclick=()=>{if(confirm("Start a new resume? Unsaved changes will be cleared.")){setData({});extractedText="";$("atsResult").innerHTML="";setStatus("New resume ready.")}};
+$("saveBtn").onclick=()=>{localStorage.setItem("resumeBuilderDraftV1",JSON.stringify({data:getData(),template:val("template")}));setStatus("Draft saved in this browser.","ok")};
+$("loadBtn").onclick=()=>{try{const x=JSON.parse(localStorage.getItem("resumeBuilderDraftV1")||"null");if(!x)throw Error("No saved draft found in this browser.");setData(x.data||{});$("template").value=x.template||"classic";render();setStatus("Draft loaded.","ok")}catch(e){setStatus(e.message,"error")}};
+$("pdfBtn").onclick=()=>{render();window.print()};
+$("copyBtn").onclick=async()=>{try{await navigator.clipboard.writeText($("resume").innerText);setStatus("Resume text copied.","ok")}catch(e){setStatus("Clipboard access failed. Select and copy the preview text manually.","error")}};
+
+$("fileInput").addEventListener("change",async e=>{
+ const f=e.target.files[0];if(!f)return;
+ if(f.size>5*1024*1024){setStatus("File exceeds 5 MB. Please upload a smaller file.","error");return}
+ setStatus("Reading resume...");
+ try{
+  let text="";
+  if(f.name.toLowerCase().endsWith(".pdf")){
+   if(!window.pdfjsLib)throw Error("PDF reader could not load. Try DOCX or TXT.");
+   const pdf=await pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise;
+   if(pdf.numPages>30)throw Error("Please upload a PDF with 30 pages or fewer.");
+   for(let i=1;i<=pdf.numPages;i++){const p=await pdf.getPage(i);const c=await p.getTextContent();text+=c.items.map(x=>x.str).join(" ")+"\n"}
+  }else if(f.name.toLowerCase().endsWith(".docx")){
+   if(!window.mammoth)throw Error("DOCX reader could not load. Try TXT.");
+   text=(await mammoth.extractRawText({arrayBuffer:await f.arrayBuffer()})).value;
+  }else{text=await f.text()}
+  if(!text.trim())throw Error("No readable text found. Try a text-based PDF or DOCX.");
+  extractedText=text.slice(0,24000);
+  $("experience").value=extractedText;
+  setStatus("Resume text extracted. Review it, correct the fields, then use Rewrite with AI for structured content.","ok");
+  document.querySelector('[data-tab="experience"]').click();render();
+ }catch(err){setStatus(err.message||"Could not read file.","error")}
+});
+
+async function callAI(mode){
+ const url=val("apiUrl");
+ if(!url){setStatus("Enter your Cloudflare Worker URL first.","error");return}
+ if(!/^https:\/\/[a-z0-9.-]+(?::\d+)?(?:\/.*)?$/i.test(url)){setStatus("Please enter a valid HTTPS Worker URL.","error");return}
+ const d=getData();
+ if(mode==="rewrite"&&!d.name&&!d.summary&&!d.experience&&!extractedText){setStatus("Upload a resume or enter some career information first.","error");return}
+ if(mode==="ats"&&!d.jobDescription){setStatus("Paste the target job description first.","error");return}
+ const btn=$(mode==="rewrite"?"rewriteBtn":"atsBtn");
+ btn.disabled=true;setStatus("AI is analyzing your information...");
+ try{
+  const r=await fetch(url.replace(/\/+$/,""),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({mode,data:d,sourceText:extractedText.slice(0,24000)})});
+  const body=await r.json();
+  if(!r.ok)throw Error(body.error||"AI request failed ("+r.status+").");
+  if(mode==="rewrite"){
+   const x=body.result;
+   if(!x||typeof x!=="object")throw Error("Unexpected AI response. Please retry.");
+   const map={name:"name",title:"title",email:"email",phone:"phone",location:"location",linkedin:"linkedin",summary:"summary",experience:"experience",achievements:"achievements",skills:"skills",education:"education",certifications:"certifications",languages:"languages"};
+   for(const [a,b] of Object.entries(map))if(typeof x[a]==="string"&&x[a].trim())$(b).value=x[a];
+   render();setStatus("Resume rewritten. Review every detail for accuracy before exporting.","ok");
+   document.querySelector('[data-tab="profile"]').click();
+  }else{
+   const x=body.result;
+   $("atsResult").innerHTML=`<div class="status"><strong>ATS review (AI estimate)</strong><br><br><strong>Match assessment:</strong> ${escapeHTML(x.matchAssessment||"Not provided")}<br><strong>Missing keywords:</strong> ${escapeHTML((x.missingKeywords||[]).join(", ")||"None listed")}<br><strong>Relevant keywords:</strong> ${escapeHTML((x.relevantKeywords||[]).join(", "))}<br><strong>Recommendations:</strong><br>${(x.recommendations||[]).map(s=>"• "+escapeHTML(s)).join("<br>")}<br><br><strong>Note:</strong> This is guidance, not a guaranteed ATS score or hiring outcome.</div>`;
+   setStatus("ATS review complete.","ok");
+  }
+ }catch(e){setStatus("Could not complete AI request: "+e.message,"error")}
+ finally{btn.disabled=false}
+}
+$("rewriteBtn").onclick=()=>callAI("rewrite");
+$("atsBtn").onclick=()=>callAI("ats");
+render();
+</script>
+</body>
+</html>
